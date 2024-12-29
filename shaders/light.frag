@@ -1,5 +1,3 @@
-/* TODO: could perform better in a compute shader by running the raycasts in parallel */
-
 #version 450
 
 #include "config.h"
@@ -39,19 +37,15 @@ float get_ray_light(
     const vec3 normal,
     const float spread)
 {
-    /* above light source */
     if (src.y - 1.0f > dst.y)
     {
         return 0.0f;
     }
     vec3 direction = dst - src;
-    /* TODO: with texel alignment and PCF, it seems like I can raise the step
-    size without any noticeable loss in accuracy. should verify */
     const float step1 = 1.0f;
     const vec2 step2 = step1 / vec2(textureSize(s_ray_position_front, 0));
     const float intensity = spread / 4.0f;
     const float spread2 = length(direction.xz);
-    /* out of effective range */
     if (spread2 > spread)
     {
         return 0.0f;
@@ -60,27 +54,22 @@ float get_ray_light(
     const float penetration2 = length(vec2(MODEL_SIZE, MODEL_SIZE)) / 2.0f;
     const float penetration3 = penetration2 * spread3 / spread2;
     direction = normalize(direction);
-    /* in light source */
     if (spread2 < penetration2)
     {
         return intensity / (spread2 + intensity);
     }
-    /* is side face and facing away */
     else if (normal.y < 0.1f && dot(direction.xz, normal.xz) < 0.0f)
     {
         return 0.0f;
     }
-    /* bias forwards slightly to ensure walls get lighting */
     const float bias = 1.0f;
     vec2 j = bias / step1 * step2;
     for (float i = bias; i < spread3 - penetration3; i += step1, j += step2)
     {
         const vec3 position = src + direction * i;
-        /* align to texel */
         vec2 neighbor_uv = uv + direction.xz * j;
         const vec2 size = vec2(textureSize(s_ray_position_front, 0));
         neighbor_uv = floor(neighbor_uv * size) / size + (1.0f / size) * 0.5f;
-        /* check if between front and back faces */
         const vec3 neighbor_front = texture(s_ray_position_front, neighbor_uv).xyz;
         const vec3 neighbor_back = texture(s_ray_position_back, neighbor_uv).xyz;
         if (position.y > neighbor_back.y && position.y < neighbor_front.y)

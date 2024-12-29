@@ -20,7 +20,7 @@ See the shader implementation [here](shaders/light.frag)
 
 ```bash
 git clone https://github.com/jsoulier/2.5d_lighting --recurse-submodules
-cd 2.5d_lighting_prototype
+cd 2.5d_lighting
 mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
@@ -33,3 +33,4 @@ cd bin
 
 - The screen will be entirely black if there's no lights in the scene
 - There's no depth peeling so models with multiple back faces will have incorrect lighting
+- Lights can sneak through corners where the widths of the models are minimal
