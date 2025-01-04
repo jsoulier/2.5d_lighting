@@ -782,6 +782,7 @@ void renderer_update(
 
 void renderer_draw()
 {
+    SDL_WaitForGPUSwapchain(device, window);
     SDL_GPUCommandBuffer* commands = SDL_AcquireGPUCommandBuffer(device);
     if (!commands)
     {
