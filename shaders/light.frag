@@ -31,20 +31,15 @@ layout(set = 3, binding = 3) uniform t_num_lights
 };
 
 float get_ray_light(
-    const vec2 uv,
     const vec3 src,
     const vec3 dst,
     const vec3 normal,
-    const float spread)
+    const float spread,
+    const vec2 uv)
 {
-    if (src.y - 1.0f > dst.y)
-    {
-        return 0.0f;
-    }
     vec3 direction = dst - src;
     const float step1 = 1.0f;
     const vec2 step2 = step1 / vec2(textureSize(s_ray_position_front, 0));
-    const float intensity = spread / 4.0f;
     const float spread2 = length(direction.xz);
     if (spread2 > spread)
     {
@@ -56,15 +51,16 @@ float get_ray_light(
     direction = normalize(direction);
     if (spread2 < penetration2)
     {
-        return intensity / (spread2 + intensity);
+        return 1.0f - spread2 / spread;
     }
     else if (normal.y < 0.1f && dot(direction.xz, normal.xz) < 0.0f)
     {
         return 0.0f;
     }
-    const float bias = 1.0f;
+    const float bias = 2.0f;
+    float i = bias;
     vec2 j = bias / step1 * step2;
-    for (float i = bias; i < spread3 - penetration3; i += step1, j += step2)
+    for (; i < spread3 - penetration3; i += step1, j += step2)
     {
         const vec3 position = src + direction * i;
         vec2 neighbor_uv = uv + direction.xz * j;
@@ -77,7 +73,7 @@ float get_ray_light(
             return 0.0f;
         }
     }
-    return intensity / (spread2 + intensity);
+    return 1.0f - spread2 / spread;
 }
 
 float get_sun_light(
@@ -104,15 +100,16 @@ void main()
     vec4 uv = u_ray_matrix * vec4(position, 1.0f);
     uv.xy = uv.xy * 0.5f + 0.5f;
     uv.y = 1.0f - uv.y;
-    o_light = 0.2f;
-    o_light = max(o_light, get_sun_light(position, normal) / 2.0f);
+    o_light = 0.3f;
+    o_light = max(o_light, get_sun_light(position, normal) / 3.0f);
     for (int i = 0; i < u_num_lights && o_light < 1.0f; i++)
     {
-        o_light = max(o_light, get_ray_light(
-            uv.xy,
+        const float light = get_ray_light(
             position,
             b_lights[i].xyz,
             normal,
-            b_lights[i].w));
+            b_lights[i].w,
+            uv.xy);
+        o_light = max(o_light, light);
     }
 }

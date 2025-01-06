@@ -5,7 +5,7 @@
             "name": "debug",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/bin/lighting.exe",
+            "program": "${workspaceFolder}/build/bin/2.5d_lighting.exe",
             "cwd": "${workspaceFolder}/build/bin",
             "preLaunchTask": "CMake: build"
         },

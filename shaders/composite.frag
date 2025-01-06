@@ -10,7 +10,7 @@ layout(set = 2, binding = 3) uniform sampler2D s_light;
 float get_light(
     const vec3 position)
 {
-    const int kernel = 2;
+    const int kernel = 3;
     const vec2 size = 1.0f / vec2(textureSize(s_normal, 0));
     float light = 0.0f;
     for (int x = -kernel; x <= kernel; x++)
@@ -38,7 +38,7 @@ float get_ssao(
     const vec3 position,
     const vec3 normal)
 {
-    const int kernel = 4;
+    const int kernel = 3;
     const vec2 size = 1.0f / vec2(textureSize(s_normal, 0));
     float ssao = 0.0f;
     for (int x = -kernel; x <= kernel; x++)
@@ -70,6 +70,6 @@ void main()
     const vec3 position = texture(s_position, i_uv).xyz;
     const vec3 normal = texture(s_normal, i_uv).xyz;
     const float light = get_light(position);
-    const float ssao = get_ssao(color, position, normal) / 4.0f;
+    const float ssao = get_ssao(color, position, normal) / 3.0f;
     o_color = color * (light - ssao);
 }

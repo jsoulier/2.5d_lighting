@@ -15,25 +15,13 @@ struct
     SDL_GPUBuffer* vbo;
     SDL_GPUBuffer* ibo;
     SDL_GPUTexture* palette;
+    int num_vertices;
     int num_indices;
     int height;
     int spread;
-    char str[256];
+    char string[256];
 }
 static models[MODEL_COUNT];
-
-typedef struct
-{
-    float vx;
-    float vy;
-    float vz;
-    float tx;
-    float ty;
-    float nx;
-    float ny;
-    float nz;
-}
-vertex_t;
 
 static void func(
     void* ctx,
@@ -55,7 +43,7 @@ static void func(
 
 static bool load(
     const model_t model,
-    const char* str,
+    const char* name,
     SDL_GPUDevice* device,
     SDL_GPUCopyPass* pass)
 {
@@ -67,8 +55,8 @@ static bool load(
     size_t num_materials;
     char obj[256];
     char png[256];
-    snprintf(obj, sizeof(obj), "%s.obj", str);
-    snprintf(png, sizeof(png), "%s.png", str);
+    snprintf(obj, sizeof(obj), "%s.obj", name);
+    snprintf(png, sizeof(png), "%s.png", name);
     if (tinyobj_parse_obj(
         &attrib,
         &shapes,
@@ -80,17 +68,30 @@ static bool load(
         NULL,
         TINYOBJ_FLAG_TRIANGULATE) != TINYOBJ_SUCCESS)
     {
-        SDL_Log("Failed to parse model: %s", str);
+        SDL_Log("Failed to parse model: %s", name);
         goto error;
     }
     models[model].height = 0;
+    models[model].num_vertices = 0;
     models[model].num_indices = attrib.num_faces;
     models[model].palette = load_texture(device, png);
     if (!models[model].palette)
     {
-        SDL_Log("Failed to load palette: %s", str);
+        SDL_Log("Failed to load palette: %s", name);
         goto error;
     }
+    typedef struct
+    {
+        float vx;
+        float vy;
+        float vz;
+        float tx;
+        float ty;
+        float nx;
+        float ny;
+        float nz;
+    }
+    vertex_t;
     struct
     {
         vertex_t key;
@@ -100,7 +101,7 @@ static bool load(
     stbds_hmdefault(map, -1);
     if (!map)
     {
-        SDL_Log("Failed to create map: %ss", str);
+        SDL_Log("Failed to create map: %ss", name);
         goto error;
     }
     SDL_GPUTransferBufferCreateInfo tbci = {0};
@@ -111,23 +112,22 @@ static bool load(
     SDL_GPUTransferBuffer* ibo = SDL_CreateGPUTransferBuffer(device, &tbci);
     if (!vbo || !ibo)
     {
-        SDL_Log("Failed to create transfer buffer(s): %s, %s", str, SDL_GetError());
+        SDL_Log("Failed to create transfer buffer(s): %s, %s", name, SDL_GetError());
         goto error;
     }
     vertex_t* vertices = SDL_MapGPUTransferBuffer(device, vbo, false);
     uint32_t* indices = SDL_MapGPUTransferBuffer(device, ibo, false);
     if (!vertices || !indices)
     {
-        SDL_Log("Failed to map transfer buffer(s): %s, %s", str, SDL_GetError());
+        SDL_Log("Failed to map transfer buffer(s): %s, %s", name, SDL_GetError());
         goto error;
     }
-    int num_vertices = 0;
     for (int i = 0; i < attrib.num_faces; i++)
     {
         const tinyobj_vertex_index_t tvi = attrib.faces[i];
         if (tvi.v_idx < 0 || tvi.vn_idx < 0 || tvi.vt_idx < 0)
         {
-            SDL_Log("Missing model data: %s", str);
+            SDL_Log("Missing model data: %s", name);
             goto error;
         }
         vertex_t vertex;
@@ -143,9 +143,9 @@ static bool load(
         if (index == -1)
         {
             models[model].height = max(models[model].height, vertex.vy);
-            stbds_hmput(map, vertex, num_vertices);
-            vertices[num_vertices] = vertex;
-            indices[i] = num_vertices++;
+            stbds_hmput(map, vertex, models[model].num_vertices);
+            vertices[models[model].num_vertices] = vertex;
+            indices[i] = models[model].num_vertices++;
         }
         else
         {
@@ -156,21 +156,21 @@ static bool load(
     SDL_UnmapGPUTransferBuffer(device, ibo);
     SDL_GPUBufferCreateInfo bci = {0};
     bci.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
-    bci.size = num_vertices * sizeof(vertex_t);
+    bci.size = models[model].num_vertices * sizeof(vertex_t);
     models[model].vbo = SDL_CreateGPUBuffer(device, &bci);
     bci.usage = SDL_GPU_BUFFERUSAGE_INDEX;
     bci.size = models[model].num_indices * sizeof(uint32_t);
     models[model].ibo = SDL_CreateGPUBuffer(device, &bci);
     if (!models[model].vbo || !models[model].ibo)
     {
-        SDL_Log("Failed to create model buffer(s): %s, %s", str, SDL_GetError());
+        SDL_Log("Failed to create model buffer(s): %s, %s", name, SDL_GetError());
         goto error;
     }
     SDL_GPUTransferBufferLocation location = {0};
     SDL_GPUBufferRegion region = {0};
     location.transfer_buffer = vbo;
     region.buffer = models[model].vbo;
-    region.size = num_vertices * sizeof(vertex_t);
+    region.size = models[model].num_vertices * sizeof(vertex_t);
     SDL_UploadToGPUBuffer(pass, &location, &region, false);
     location.transfer_buffer = ibo;
     region.buffer = models[model].ibo;
@@ -222,7 +222,7 @@ bool model_init(
     for (model_t model = 0; model < MODEL_COUNT; model++)
     {
         const char* src = names[model];
-        char* dst = models[model].str;
+        char* dst = models[model].string;
         for (int i = 0; i < 256 && src[i]; i++)
         {
             dst[i] = tolower(src[i]);
@@ -244,7 +244,7 @@ bool model_init(
     return status;
 }
 
-void  model_free(
+void model_free(
     SDL_GPUDevice* device)
 {
     assert(device);
@@ -289,6 +289,13 @@ SDL_GPUTexture* model_get_palette(
     return models[model].palette;
 }
 
+int model_get_num_vertices(
+    const model_t model)
+{
+    assert(model < MODEL_COUNT);
+    return models[model].num_vertices;
+}
+
 int model_get_num_indices(
     const model_t model)
 {
@@ -310,9 +317,9 @@ int model_get_spread(
     return models[model].spread;
 }
 
-const char* model_get_str(
+const char* model_get_string(
     const model_t model)
 {
     assert(model < MODEL_COUNT);
-    return models[model].str;
+    return models[model].string;
 }

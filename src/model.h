@@ -37,11 +37,13 @@ SDL_GPUBuffer* model_get_ibo(
     const model_t model);
 SDL_GPUTexture* model_get_palette(
     const model_t model);
+int model_get_num_vertices(
+    const model_t model);
 int model_get_num_indices(
     const model_t model);
 int model_get_height(
     const model_t model);
 int model_get_spread(
     const model_t model);
-const char* model_get_str(
+const char* model_get_string(
     const model_t model);

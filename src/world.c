@@ -301,9 +301,8 @@ void world_draw_models(
             tsb.texture = model_get_palette(model);
             SDL_BindGPUFragmentSamplers(pass, 0, &tsb, 1);
         }
-        const int num_indices = model_get_num_indices(model);
-        const int count = instances[model];
-        SDL_DrawGPUIndexedPrimitives(pass, num_indices, count, 0, 0, 0);
+        const int num = model_get_num_indices(model);
+        SDL_DrawGPUIndexedPrimitives(pass, num, instances[model], 0, 0, 0);
     }
 }
 

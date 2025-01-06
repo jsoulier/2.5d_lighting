@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(lighting)
+project(2.5d_lighting)
 
 set(BINARY_DIR ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BINARY_DIR})
@@ -14,7 +14,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${BINARY_DIR})
 make_directory(${BINARY_DIR})
 
 add_subdirectory(lib/SDL)
-add_executable(lighting WIN32
+add_executable(2.5d_lighting WIN32
     lib/SPIRV-Reflect/spirv_reflect.c
     lib/sqlite3/sqlite3.c
     lib/stb/stb.c
@@ -27,15 +27,15 @@ add_executable(lighting WIN32
     src/renderer.c
     src/world.c
 )
-target_link_libraries(lighting PUBLIC SDL3::SDL3)
+target_link_libraries(2.5d_lighting PUBLIC SDL3::SDL3)
 if(UNIX)
-    target_link_libraries(lighting PUBLIC m)
+    target_link_libraries(2.5d_lighting PUBLIC m)
 endif()
-target_include_directories(lighting PUBLIC lib/SPIRV-Reflect)
-target_include_directories(lighting PUBLIC lib/sqlite3)
-target_include_directories(lighting PUBLIC lib/stb)
-target_include_directories(lighting PUBLIC lib/tinyobjloader-c)
-set_target_properties(lighting PROPERTIES C_STANDARD 11)
+target_include_directories(2.5d_lighting PUBLIC lib/SPIRV-Reflect)
+target_include_directories(2.5d_lighting PUBLIC lib/sqlite3)
+target_include_directories(2.5d_lighting PUBLIC lib/stb)
+target_include_directories(2.5d_lighting PUBLIC lib/tinyobjloader-c)
+set_target_properties(2.5d_lighting PROPERTIES C_STANDARD 11)
 
 function(shader FILE)
     set(SOURCE shaders/${FILE})
@@ -50,7 +50,7 @@ function(shader FILE)
     )
     string(REPLACE . _ NAME ${FILE})
     add_custom_target(${NAME} DEPENDS ${OUTPUT})
-    add_dependencies(lighting ${NAME})
+    add_dependencies(2.5d_lighting ${NAME})
 endfunction()
 shader(composite.frag)
 shader(fullscreen.vert)

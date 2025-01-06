@@ -11,6 +11,24 @@
 
 enum
 {
+    GRAPHICS_MODEL,
+    GRAPHICS_RAY_MODEL_FRONT,
+    GRAPHICS_RAY_MODEL_BACK,
+    GRAPHICS_SUN_MODEL,
+    GRAPHICS_HIGHLIGHT,
+    GRAPHICS_LIGHT,
+    GRAPHICS_COMPOSITE,
+    GRAPHICS_COUNT,
+};
+
+enum
+{
+    COMPUTE_SAMPLER,
+    COMPUTE_COUNT,
+};
+
+enum
+{
     TEXTURE_COLOR,
     TEXTURE_DEPTH,
     TEXTURE_POSITION,
@@ -30,24 +48,6 @@ enum
     SAMPLER_NEAREST,
     SAMPLER_LINEAR,
     SAMPLER_COUNT,
-};
-
-enum
-{
-    GRAPHICS_MODEL,
-    GRAPHICS_RAY_MODEL_FRONT,
-    GRAPHICS_RAY_MODEL_BACK,
-    GRAPHICS_SUN_MODEL,
-    GRAPHICS_HIGHLIGHT,
-    GRAPHICS_LIGHT,
-    GRAPHICS_COMPOSITE,
-    GRAPHICS_COUNT,
-};
-
-enum
-{
-    COMPUTE_SAMPLER,
-    COMPUTE_COUNT,
 };
 
 static SDL_Window* window;
@@ -563,8 +563,8 @@ static bool create_textures()
     {
         .format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT,
         .usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER,
-        .width = RENDERER_SUN_WIDTH,
-        .height = RENDERER_SUN_HEIGHT,
+        .width = RENDERER_WIDTH * RENDERER_SUN_OFFSCREEN * RENDERER_SUN_QUALITY,
+        .height = RENDERER_HEIGHT * RENDERER_SUN_OFFSCREEN * RENDERER_SUN_QUALITY,
     };
     info[TEXTURE_LIGHT] = (SDL_GPUTextureCreateInfo)
     {
@@ -663,7 +663,7 @@ bool renderer_init(
         RENDERER_WIDTH * RENDERER_SUN_OFFSCREEN,
         RENDERER_HEIGHT * RENDERER_SUN_OFFSCREEN,
         rad(-45.0f),
-        rad(-10.0f),
+        rad(-1.0f),
         1.0f);
     if (!create_pipelines())
     {
@@ -770,12 +770,15 @@ void renderer_update(
     camera_get_bounds(&camera, &x1, &z1, &x2, &z2);
     float a = (x1 + x2) / 2.0f;
     float b = (z1 + z2) / 2.0f;
-    a = (int) a / MODEL_SIZE;
-    b = (int) b / MODEL_SIZE;
-    a *= MODEL_SIZE;
-    b *= MODEL_SIZE;
+    float c = 0.0f;
+    float d = 0.0f;
+    camera_project(&camera, &c, &d, 0.0f);
+    a = ((int) a / MODEL_SIZE) * MODEL_SIZE;
+    b = ((int) b / MODEL_SIZE) * MODEL_SIZE;
+    c = ((int) c / MODEL_SIZE) * MODEL_SIZE;
+    d = ((int) d / MODEL_SIZE) * MODEL_SIZE;
     camera_set_target(&ray_camera, a, b);
-    camera_set_target(&sun_camera, a, b);
+    camera_set_target(&sun_camera, c, d);
     camera_update(&ray_camera);
     camera_update(&sun_camera);
 }

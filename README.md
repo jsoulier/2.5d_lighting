@@ -1,10 +1,11 @@
 # 2.5D Lighting
 
-Tiny isometric lighting prototype.
-Combines an isometric and top-down orthographic view to support a large number of point lights with shadows.
+2.5D lighting model prototype.
+Combines a 2.5D and top-down orthographic view to support a large number of point lights with shadows.
 Relies on raycasting instead of rendering from each light source to reduce the number of renders.
 
 ![](image.png)
+*Around 30 point lights running at 40 FPS on integrated Ryzen 7 4700U Graphics*
 
 Steps:
 1. Render the scene from the player view
@@ -26,11 +27,11 @@ cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build . --parallel 8 --config Release
 cd bin
-./lighting.exe
+./2.5d_lighting.exe
 ```
 
-### Known Bugs
+### Bugs
 
 - The screen will be entirely black if there's no lights in the scene
 - There's no depth peeling so models with multiple back faces will have incorrect lighting
-- Lights can sneak through corners where the widths of the models are minimal
+- Lights can sneak through corners where the models have small widths
