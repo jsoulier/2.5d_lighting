@@ -1,22 +1,20 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include <stdbool.h>
 
 #define MODELS \
     X(GRASS, 0) \
-    X(DIRT, 0) \
+    X(LIGHTHOUSE, 150) \
     X(WATER, 0) \
     X(ROCK1, 0) \
     X(ROCK2, 0) \
     X(ROCK3, 0) \
     X(ROCK4, 0) \
     X(ROCK5, 0) \
-    X(SAND, 0) \
     X(TREE1, 0) \
     X(TREE2, 0) \
     X(TREE3, 0) \
-    X(LAVA, 50) \
-    X(LIGHTHOUSE, 150) \
 
 typedef enum
 {

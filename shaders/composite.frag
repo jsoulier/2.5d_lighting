@@ -70,6 +70,7 @@ void main()
     const vec3 position = texture(s_position, i_uv).xyz;
     const vec3 normal = texture(s_normal, i_uv).xyz;
     const float light = get_light(position);
-    const float ssao = get_ssao(color, position, normal) / 3.0f;
-    o_color = color * (light - ssao);
+    const float ssao = get_ssao(color, position, normal);
+    const float height = position.y / 32.0f;
+    o_color = color * (light - ssao / 3.0f + height / 3.0f);
 }

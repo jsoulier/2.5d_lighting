@@ -41,15 +41,15 @@ float get_ray_light(
     const float step1 = 1.0f;
     const vec2 step2 = step1 / vec2(textureSize(s_ray_position_front, 0));
     const float spread2 = length(direction.xz);
+    const float spread3 = length(direction);
+    direction = normalize(direction);
     if (spread2 > spread)
     {
         return 0.0f;
     }
-    const float spread3 = length(direction);
-    const float penetration2 = length(vec2(MODEL_SIZE, MODEL_SIZE)) / 2.0f;
-    const float penetration3 = penetration2 * spread3 / spread2;
-    direction = normalize(direction);
-    if (spread2 < penetration2)
+    const float end2 = length(vec2(MODEL_SIZE, MODEL_SIZE)) / 2.0f;
+    const float end3 = end2 * spread3 / spread2;
+    if (spread2 < end2)
     {
         return 1.0f - spread2 / spread;
     }
@@ -57,18 +57,18 @@ float get_ray_light(
     {
         return 0.0f;
     }
-    const float bias = 2.0f;
-    float i = bias;
-    vec2 j = bias / step1 * step2;
-    for (; i < spread3 - penetration3; i += step1, j += step2)
+    const float angle = abs(dot(direction.xz, vec2(0.0f, 1.0f)));
+    const float start = 2.0f + abs(angle - 0.5f) * 10.0f;
+    vec2 i2 = start / step1 * step2;
+    for (float i1 = start; i1 < spread3 - end3; i1 += step1, i2 += step2)
     {
-        const vec3 position = src + direction * i;
-        vec2 neighbor_uv = uv + direction.xz * j;
+        const vec3 position = src + direction * i1;
+        vec2 ray_uv = uv + direction.xz * i2;
         const vec2 size = vec2(textureSize(s_ray_position_front, 0));
-        neighbor_uv = floor(neighbor_uv * size) / size + (1.0f / size) * 0.5f;
-        const vec3 neighbor_front = texture(s_ray_position_front, neighbor_uv).xyz;
-        const vec3 neighbor_back = texture(s_ray_position_back, neighbor_uv).xyz;
-        if (position.y > neighbor_back.y && position.y < neighbor_front.y)
+        ray_uv = floor(ray_uv * size) / size + (1.0f / size) * 0.5f;
+        const vec3 ray_front = texture(s_ray_position_front, ray_uv).xyz;
+        const vec3 ray_back = texture(s_ray_position_back, ray_uv).xyz;
+        if (position.y > ray_back.y && position.y < ray_front.y)
         {
             return 0.0f;
         }

@@ -80,21 +80,26 @@ int main(int argc, char** argv)
             const bool* keys = SDL_GetKeyboardState(NULL);
             float dx = 0.0f;
             float dz = 0.0f;
+            float speed = SPEED;
+            if (keys[SDL_SCANCODE_LSHIFT])
+            {
+                speed /= 10.0f;
+            }
             if (keys[SDL_SCANCODE_W])
             {
-                dz -= SPEED;
+                dz -= speed;
             }
             else if (keys[SDL_SCANCODE_S])
             {
-                dz += SPEED;
+                dz += speed;
             }
             if (keys[SDL_SCANCODE_D])
             {
-                dx += SPEED;
+                dx += speed;
             }
             else if (keys[SDL_SCANCODE_A])
             {
-                dx -= SPEED;
+                dx -= speed;
             }
             x += dx * dt;
             z += dz * dt;
