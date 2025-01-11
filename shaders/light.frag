@@ -37,6 +37,10 @@ float get_ray_light(
     const float spread,
     const vec2 uv)
 {
+    if (src.y - 0.1f > dst.y && normal.y > 0.9f)
+    {
+        return 0.0f;
+    }
     vec3 direction = dst - src;
     const float step1 = 1.0f;
     const vec2 step2 = step1 / vec2(textureSize(s_ray_position_front, 0));

@@ -1,11 +1,10 @@
 # 2.5D Lighting
 
+![](image.png)
+
 2.5D lighting model prototype.
 Combines a 2.5D and top-down orthographic view to support a large number of point lights with shadows.
-Relies on raycasting instead of rendering from each light source to reduce the number of renders.
-
-![](image.png)
-*Around 20 point lights running at nearly 50 FPS on integrated Ryzen 7 4700U Graphics using around 250 MBs*
+Relies on raycasting instead of rendering from each light source to reduce the number of renders and textures.
 
 Steps:
 1. Render the scene from the player view
