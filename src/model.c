@@ -18,7 +18,10 @@ struct
     int num_vertices;
     int num_indices;
     int height;
-    int spread;
+    int intensity;
+    int red;
+    int green;
+    int blue;
     char string[256];
 }
 static models[MODEL_COUNT];
@@ -212,9 +215,9 @@ bool model_init(
         MODELS
 #undef X
     };
-    const int spreads[MODEL_COUNT] =
+    const uint32_t colors[MODEL_COUNT] =
     {
-#define X(name, spread) spread,
+#define X(name, color) color,
         MODELS
 #undef X
     };
@@ -227,7 +230,10 @@ bool model_init(
         {
             dst[i] = tolower(src[i]);
         }
-        models[model].spread = spreads[model];
+        models[model].intensity = (colors[model] & 0x000000FF) >> 0;
+        models[model].red = (colors[model] & 0xFF000000) >> 24;
+        models[model].green = (colors[model] & 0x00FF0000) >> 16;
+        models[model].blue = (colors[model] & 0x0000FF00) >> 8;
         if (!load(model, dst, device, pass))
         {
             SDL_Log("Failed to load model: %s", dst);
@@ -310,11 +316,32 @@ int model_get_height(
     return models[model].height;
 }
 
-int model_get_spread(
+int model_get_intensity(
     const model_t model)
 {
     assert(model < MODEL_COUNT);
-    return models[model].spread;
+    return models[model].intensity;
+}
+
+int model_get_red(
+    const model_t model)
+{
+    assert(model < MODEL_COUNT);
+    return models[model].red;
+}
+
+int model_get_green(
+    const model_t model)
+{
+    assert(model < MODEL_COUNT);
+    return models[model].green;
+}
+
+int model_get_blue(
+    const model_t model)
+{
+    assert(model < MODEL_COUNT);
+    return models[model].blue;
 }
 
 const char* model_get_string(

@@ -446,7 +446,7 @@ static bool create_pipelines()
             .num_color_targets = 1,
             .color_target_descriptions = (SDL_GPUColorTargetDescription[])
             {{
-                .format = SDL_GPU_TEXTUREFORMAT_R32_FLOAT,
+                .format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
             }},
         },
     };
@@ -568,7 +568,7 @@ static bool create_textures()
     };
     info[TEXTURE_LIGHT] = (SDL_GPUTextureCreateInfo)
     {
-        .format = SDL_GPU_TEXTUREFORMAT_R32_FLOAT,
+        .format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
         .usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER,
         .width = RENDERER_WIDTH,
         .height = RENDERER_HEIGHT,

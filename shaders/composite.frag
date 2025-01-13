@@ -7,12 +7,12 @@ layout(set = 2, binding = 1) uniform sampler2D s_position;
 layout(set = 2, binding = 2) uniform sampler2D s_normal;
 layout(set = 2, binding = 3) uniform sampler2D s_light;
 
-float get_light(
+vec4 get_light(
     const vec3 position)
 {
     const int kernel = 3;
     const vec2 size = 1.0f / vec2(textureSize(s_normal, 0));
-    float light = 0.0f;
+    vec4 light = vec4(0.0f);
     for (int x = -kernel; x <= kernel; x++)
     {
         for (int y = -kernel; y <= kernel; y++)
@@ -21,11 +21,11 @@ float get_light(
             const vec3 neighbor_position = texture(s_position, neighbor_uv).xyz;
             if (abs(position.y - neighbor_position.y) < 1.0f)
             {
-                light += texture(s_light, neighbor_uv).x;
+                light += texture(s_light, neighbor_uv);
             }
             else
             {
-                light += texture(s_light, i_uv).x;
+                light += texture(s_light, i_uv);
             }
         }
     }
@@ -69,8 +69,9 @@ void main()
     const vec4 color = texture(s_color, i_uv);
     const vec3 position = texture(s_position, i_uv).xyz;
     const vec3 normal = texture(s_normal, i_uv).xyz;
-    const float light = get_light(position);
+    const vec4 light = get_light(position);
     const float ssao = get_ssao(color, position, normal);
-    const float height = position.y / 32.0f;
-    o_color = color * (light - ssao / 3.0f + height / 3.0f);
+    const float intensity = clamp(light.a - ssao / 6.0f, 0.0f, 1.0f);
+    const vec3 base = color.rgb * intensity;
+    o_color = vec4(mix(base, light.rgb, intensity), 1.0f);
 }

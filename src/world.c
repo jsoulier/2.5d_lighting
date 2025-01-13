@@ -127,7 +127,7 @@ void world_update(
         {
             const model_t model = world_get_model(x, z);
             instances[model]++;
-            lights += model_get_spread(model) > 0;
+            lights += model_get_intensity(model) > 0;
         }
     }
     float* mdata[MODEL_COUNT] = {0};
@@ -189,11 +189,11 @@ void world_update(
         }
         SDL_GPUTransferBufferCreateInfo tbci = {0};
         tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
-        tbci.size = lights * sizeof(float) * 4;
+        tbci.size = lights * sizeof(float) * 8;
         light_tbo = SDL_CreateGPUTransferBuffer(device, &tbci);
         SDL_GPUBufferCreateInfo bci = {0};
         bci.usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ;
-        bci.size = lights * sizeof(float) * 4;
+        bci.size = lights * sizeof(float) * 8;
         light_sbo = SDL_CreateGPUBuffer(device, &bci);
         if (!light_tbo || !light_sbo)
         {
@@ -222,14 +222,18 @@ void world_update(
             mdata[model][instances[model] * 4 + 2] = z * MODEL_SIZE;
             mdata[model][instances[model] * 4 + 3] = 0.0f;
             instances[model]++;
-            if (model_get_spread(model) <= 0)
+            if (model_get_intensity(model) <= 0)
             {
                 continue;
             }
-            ldata[lights * 4 + 0] = x * MODEL_SIZE;
-            ldata[lights * 4 + 1] = model_get_height(model);
-            ldata[lights * 4 + 2] = z * MODEL_SIZE;
-            ldata[lights * 4 + 3] = model_get_spread(model);
+            ldata[lights * 8 + 0] = x * MODEL_SIZE;
+            ldata[lights * 8 + 1] = model_get_height(model);
+            ldata[lights * 8 + 2] = z * MODEL_SIZE;
+            ldata[lights * 8 + 3] = 0.0f;
+            ldata[lights * 8 + 4] = model_get_red(model);
+            ldata[lights * 8 + 5] = model_get_green(model);
+            ldata[lights * 8 + 6] = model_get_blue(model);
+            ldata[lights * 8 + 7] = model_get_intensity(model);
             lights++;
         }
     }
@@ -266,7 +270,7 @@ void world_update(
         SDL_GPUBufferRegion region = {0};
         location.transfer_buffer = light_tbo;
         region.buffer = light_sbo;
-        region.size = lights * sizeof(float) * 4;
+        region.size = lights * sizeof(float) * 8;
         SDL_UploadToGPUBuffer(copy, &location, &region, true);
     }
     SDL_EndGPUCopyPass(copy);
@@ -301,8 +305,9 @@ void world_draw_models(
             tsb.texture = model_get_palette(model);
             SDL_BindGPUFragmentSamplers(pass, 0, &tsb, 1);
         }
-        const int num = model_get_num_indices(model);
-        SDL_DrawGPUIndexedPrimitives(pass, num, instances[model], 0, 0, 0);
+        const int i = model_get_num_indices(model);
+        const int j = instances[model];
+        SDL_DrawGPUIndexedPrimitives(pass, i, j, 0, 0, 0);
     }
 }
 

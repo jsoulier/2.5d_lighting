@@ -2,8 +2,16 @@
 
 #include "config.h"
 
+struct t_light
+{
+    vec3 position;
+    float padding;
+    vec3 color;
+    float intensity;
+};
+
 layout(location = 0) in vec2 i_uv;
-layout(location = 0) out float o_light;
+layout(location = 0) out vec4 o_light;
 layout(set = 2, binding = 0) uniform sampler2D s_position;
 layout(set = 2, binding = 1) uniform sampler2D s_normal;
 layout(set = 2, binding = 2) uniform sampler2D s_ray_position_front;
@@ -11,7 +19,7 @@ layout(set = 2, binding = 3) uniform sampler2D s_ray_position_back;
 layout(set = 2, binding = 4) uniform sampler2D s_sun_depth;
 layout(set = 2, binding = 5) buffer readonly t_lights
 {
-    vec4 b_lights[];
+    t_light b_lights[];
 };
 layout(set = 3, binding = 0) uniform t_ray_matrix
 {
@@ -104,16 +112,23 @@ void main()
     vec4 uv = u_ray_matrix * vec4(position, 1.0f);
     uv.xy = uv.xy * 0.5f + 0.5f;
     uv.y = 1.0f - uv.y;
-    o_light = 0.3f;
-    o_light = max(o_light, get_sun_light(position, normal) / 3.0f);
-    for (int i = 0; i < u_num_lights && o_light < 1.0f; i++)
+    o_light = vec4(0.3f);
+    o_light = max(o_light, vec4(get_sun_light(position, normal) / 3.0f));
+    for (int i = 0; i < u_num_lights; i++)
     {
-        const float light = get_ray_light(
+        float light = get_ray_light(
             position,
-            b_lights[i].xyz,
+            b_lights[i].position,
             normal,
-            b_lights[i].w,
+            b_lights[i].intensity,
             uv.xy);
-        o_light = max(o_light, light);
+        if (light <= 0.0f)
+        {
+            continue;
+        }
+        light /= 2.0f;
+        const vec3 color = b_lights[i].color / 255.0f;
+        o_light.rgb = mix(o_light.rgb, color, light);
+        o_light.a += light;
     }
 }

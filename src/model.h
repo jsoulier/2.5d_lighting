@@ -5,20 +5,24 @@
 
 #define MODELS \
     X(GRASS, 0) \
-    X(LIGHTHOUSE, 150) \
-    X(WATER, 0) \
+    X(GRASS_BLUE, 0x0000FF00 | 100) \
+    X(GRASS_GREEN, 0x00FF0000 | 100) \
+    X(GRASS_RED, 0xFF000000 | 100) \
     X(ROCK1, 0) \
     X(ROCK2, 0) \
     X(ROCK3, 0) \
     X(ROCK4, 0) \
     X(ROCK5, 0) \
+    X(ROCK_BLUE, 0x0000FF00 | 100) \
+    X(ROCK_GREEN, 0x00FF0000 | 100) \
+    X(ROCK_RED, 0xFF000000 | 100) \
     X(TREE1, 0) \
     X(TREE2, 0) \
     X(TREE3, 0) \
 
 typedef enum
 {
-#define X(name, spread) MODEL_##name,
+#define X(name, colors) MODEL_##name,
     MODELS
 #undef X
     MODEL_COUNT,
@@ -41,7 +45,13 @@ int model_get_num_indices(
     const model_t model);
 int model_get_height(
     const model_t model);
-int model_get_spread(
+int model_get_intensity(
+    const model_t model);
+int model_get_red(
+    const model_t model);
+int model_get_green(
+    const model_t model);
+int model_get_blue(
     const model_t model);
 const char* model_get_string(
     const model_t model);
