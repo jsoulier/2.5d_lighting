@@ -114,9 +114,11 @@ void main()
     uv.y = 1.0f - uv.y;
     o_light = vec4(0.3f);
     o_light = max(o_light, vec4(get_sun_light(position, normal) / 3.0f));
+    vec3 color = vec3(0.0f);
+    float intensity = 0.0f;
     for (int i = 0; i < u_num_lights; i++)
     {
-        float light = get_ray_light(
+        const float light = get_ray_light(
             position,
             b_lights[i].position,
             normal,
@@ -126,9 +128,14 @@ void main()
         {
             continue;
         }
-        light /= 2.0f;
-        const vec3 color = b_lights[i].color / 255.0f;
-        o_light.rgb = mix(o_light.rgb, color, light);
-        o_light.a += light;
+        color += b_lights[i].color / 255.0f * light;
+        intensity += light;
     }
+    if (intensity <= 0.0f)
+    {
+        return;
+    }
+    color /= intensity;
+    o_light.rgb = mix(o_light.rgb, color, intensity);
+    o_light.a += intensity;
 }

@@ -71,7 +71,7 @@ void main()
     const vec3 normal = texture(s_normal, i_uv).xyz;
     const vec4 light = get_light(position);
     const float ssao = get_ssao(color, position, normal);
-    const float intensity = clamp(light.a - ssao / 6.0f, 0.0f, 1.0f);
+    const float intensity = clamp(light.a / 1.5f - ssao / 6.0f, 0.0f, 1.0f);
     const vec3 base = color.rgb * intensity;
     o_color = vec4(mix(base, light.rgb, intensity), 1.0f);
 }
