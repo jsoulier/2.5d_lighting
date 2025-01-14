@@ -39,12 +39,12 @@ int main(int argc, char** argv)
         SDL_Log("Failed to initialize database");
         return EXIT_FAILURE;
     }
-    model_t selected;
+    model_t model;
     float x;
     float z;
-    database_get_state(&selected, &x, &z);
+    database_get_state(&model, &x, &z);
     SDL_SetWindowResizable(window, true);
-    SDL_SetWindowTitle(window, model_get_string(selected));
+    SDL_SetWindowTitle(window, model_get_string(model));
     bool running = true;
     uint64_t t1 = SDL_GetPerformanceCounter();
     uint64_t t2 = 0;
@@ -63,16 +63,16 @@ int main(int argc, char** argv)
                 running = false;
                 break;
             case SDL_EVENT_MOUSE_WHEEL:
-                selected += event.wheel.y;
-                if (selected < 0)
+                model += event.wheel.y;
+                if (model < 0)
                 {
-                    selected = MODEL_COUNT - 1;
+                    model = MODEL_COUNT - 1;
                 }
-                else if (selected >= MODEL_COUNT)
+                else if (model >= MODEL_COUNT)
                 {
-                    selected = 0;
+                    model = 0;
                 }
-                SDL_SetWindowTitle(window, model_get_string(selected));
+                SDL_SetWindowTitle(window, model_get_string(model));
                 break;
             }
         }
@@ -125,14 +125,14 @@ int main(int argc, char** argv)
             const float sx = mx;
             renderer_pick(&mx, &my, &mz);
             width /= 2;
-            mz -= PICK_BIAS;
+            mz -= MOUSE_BIAS;
             if (sx < width)
             {
-                mx -= PICK_BIAS;
+                mx -= MOUSE_BIAS;
             }
             else
             {
-                mx += PICK_BIAS;
+                mx += MOUSE_BIAS;
             }
             if (mx > 0.0f)
             {
@@ -150,28 +150,33 @@ int main(int argc, char** argv)
             {
                 mz = (int) (mz + MODEL_SIZE / 2.0f) / MODEL_SIZE;
             }
-            const int buttons = SDL_GetMouseState(NULL, NULL);
-            if (buttons & SDL_BUTTON_RMASK)
+            const model_t selected = world_get_model(mx, mz);
+            if (selected != MODEL_COUNT)
             {
-                world_set_model(selected, mx, mz);
-            }
-            else if (buttons & SDL_BUTTON_LMASK)
-            {
-                world_set_model(0, mx, mz);
-            }
-            const model_t picked = world_get_model(mx, mz);
-            if (picked != MODEL_COUNT)
-            {
+                const int buttons = SDL_GetMouseState(NULL, NULL);
+                if (buttons & SDL_BUTTON_RMASK)
+                {
+                    world_set_model(model, mx, mz);
+                }
+                else if (buttons & SDL_BUTTON_LMASK)
+                {
+                    world_set_model(0, mx, mz);
+                }
+                else if (buttons & SDL_BUTTON_MMASK)
+                {
+                    model = selected;
+                    SDL_SetWindowTitle(window, model_get_string(model));
+                }
                 mx *= MODEL_SIZE;
                 mz *= MODEL_SIZE;
-                renderer_highlight(picked, mx, 0.0f, mz);
+                renderer_highlight(selected, mx, 0.0f, mz);
             }
         }
         renderer_blit();
-        database_set_state(selected, x, z);
+        database_set_state(model, x, z);
     }
     world_free(device);
-    database_set_state(selected, x, z);
+    database_set_state(model, x, z);
     database_free();
     renderer_free();
     SDL_DestroyGPUDevice(device);

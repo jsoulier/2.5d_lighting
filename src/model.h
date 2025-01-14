@@ -22,7 +22,7 @@
 
 typedef enum
 {
-#define X(name, colors) MODEL_##name,
+#define X(name, color) MODEL_##name,
     MODELS
 #undef X
     MODEL_COUNT,

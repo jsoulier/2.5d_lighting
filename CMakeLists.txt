@@ -62,7 +62,6 @@ spirv(model.frag)
 spirv(model.vert)
 spirv(ray_model.frag)
 spirv(sampler.comp)
-spirv(sun_model.frag)
 
 function(model NAME)
     set(SOURCE models/${NAME}.mtl)

@@ -211,7 +211,7 @@ bool model_init(
     }
     const char* names[MODEL_COUNT] =
     {
-#define X(name, spread) #name,
+#define X(name, color) #name,
         MODELS
 #undef X
     };

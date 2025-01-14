@@ -47,16 +47,13 @@ float get_ssao(
         {
             const vec2 neighbor_uv = i_uv + vec2(x, y) * size;
             const vec3 neighbor_normal = texture(s_normal, neighbor_uv).xyz;
-            if (dot(normal, neighbor_normal) < 0.9f)
-            {
-                ssao += 1.0f;
-                continue;
-            }
             const vec4 neighbor_color = texture(s_color, neighbor_uv);
-            if (distance(color, neighbor_color) > 0.1f)
+            const vec3 neighbor_position = texture(s_position, neighbor_uv).xyz;
+            if ((dot(normal, neighbor_normal) < 0.9f) ||
+                (distance(color, neighbor_color) > 0.1f) || (normal.y > 0.9f &&
+                (abs(position.y - neighbor_position.y) > 0.1f)))
             {
                 ssao += 1.0f;
-                continue;
             }
         }
     }
@@ -70,8 +67,8 @@ void main()
     const vec3 position = texture(s_position, i_uv).xyz;
     const vec3 normal = texture(s_normal, i_uv).xyz;
     const vec4 light = get_light(position);
-    const float ssao = get_ssao(color, position, normal);
-    const float intensity = clamp(light.a / 1.5f - ssao / 6.0f, 0.0f, 1.0f);
+    const vec4 ssao = vec4(get_ssao(color, position, normal));
+    const float intensity = clamp(light.a / 1.5f, 0.0f, 1.0f);
     const vec3 base = color.rgb * intensity;
-    o_color = vec4(mix(base, light.rgb, intensity), 1.0f);
+    o_color = vec4(mix(base, light.rgb, intensity), 1.0f) - ssao / 8.0f;
 }

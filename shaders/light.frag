@@ -16,8 +16,7 @@ layout(set = 2, binding = 0) uniform sampler2D s_position;
 layout(set = 2, binding = 1) uniform sampler2D s_normal;
 layout(set = 2, binding = 2) uniform sampler2D s_ray_position_front;
 layout(set = 2, binding = 3) uniform sampler2D s_ray_position_back;
-layout(set = 2, binding = 4) uniform sampler2D s_sun_depth;
-layout(set = 2, binding = 5) buffer readonly t_lights
+layout(set = 2, binding = 4) buffer readonly t_lights
 {
     t_light b_lights[];
 };
@@ -25,20 +24,12 @@ layout(set = 3, binding = 0) uniform t_ray_matrix
 {
     mat4 u_ray_matrix;
 };
-layout(set = 3, binding = 1) uniform t_sun_matrix
-{
-    mat4 u_sun_matrix;
-};
-layout(set = 3, binding = 2) uniform t_sun_direction
-{
-    vec3 u_sun_direction;
-};
-layout(set = 3, binding = 3) uniform t_num_lights
+layout(set = 3, binding = 1) uniform t_num_lights
 {
     uint u_num_lights;
 };
 
-float get_ray_light(
+float raycast(
     const vec3 src,
     const vec3 dst,
     const vec3 normal,
@@ -88,23 +79,6 @@ float get_ray_light(
     return 1.0f - spread2 / spread;
 }
 
-float get_sun_light(
-    const vec3 position,
-    const vec3 normal)
-{
-    const float sun = max(dot(u_sun_direction, -normal), 0.0f);
-    if (sun <= 0.0f)
-    {
-        return 0.0f;
-    }
-    vec4 uv = u_sun_matrix * vec4(position, 1.0f);
-    const float depth = uv.z;
-    uv.xy = uv.xy * 0.5f + 0.5f;
-    uv.y = 1.0f - uv.y;
-    const float nearest = texture(s_sun_depth, uv.xy).x;
-    return float(depth - 0.005f < nearest) / 2.0f;
-}
-
 void main()
 {
     const vec3 position = texture(s_position, i_uv).xyz;
@@ -113,12 +87,11 @@ void main()
     uv.xy = uv.xy * 0.5f + 0.5f;
     uv.y = 1.0f - uv.y;
     o_light = vec4(0.3f);
-    o_light = max(o_light, vec4(get_sun_light(position, normal) / 3.0f));
     vec3 color = vec3(0.0f);
     float intensity = 0.0f;
     for (int i = 0; i < u_num_lights; i++)
     {
-        const float light = get_ray_light(
+        const float light = raycast(
             position,
             b_lights[i].position,
             normal,

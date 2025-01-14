@@ -1,10 +1,11 @@
 # 2.5D Lighting
 
-![](image.png)
-
 2.5D lighting model prototype.
 Combines a 2.5D and top-down orthographic view to support a large number of point lights with shadows.
 Relies on raycasting instead of rendering from each light source to reduce the number of renders and textures.
+
+![](image.png)
+*Around 20 point lights running at VSync (74 Hz) on integrated AMD Ryzen 7 4700U Graphics (using about 150 MBs)*
 
 Steps:
 1. Render the scene from the player view
@@ -12,7 +13,7 @@ Steps:
 3. Render the same scene from a topdown orthographic view using front face culling
 4. Sample the world space position (ray origin) for each fragment
 5. Walk each ray to each light and cull if between the front and back face
-6. (optional) Add directional shadows, SSAO, and apply PCF
+6. (optional) Add attenuation, blending, SSAO, etc
 
 See the shader implementation [here](shaders/light.frag)
 
