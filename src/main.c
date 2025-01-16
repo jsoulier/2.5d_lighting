@@ -10,7 +10,9 @@
 #include "model.h"
 #include "world.h"
 
-int main(int argc, char** argv)
+int main(
+    int argc,
+    char** argv)
 {
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
@@ -27,7 +29,7 @@ int main(int argc, char** argv)
     if (!device)
     {
         SDL_Log("Failed to create device: %s", SDL_GetError());
-        return false;
+        return EXIT_FAILURE;
     }
     if (!renderer_init(window, device))
     {
