@@ -104,7 +104,7 @@ SDL_GPUComputePipeline* load_compute_pipeline(
     info.threadcount_x = entry->local_size.x;
     info.threadcount_y = entry->local_size.y;
     info.threadcount_z = entry->local_size.z;
-    for (int i = 0; i < module.descriptor_binding_count; ++i)
+    for (int i = 0; i < module.descriptor_binding_count; i++)
     {
         const SpvReflectDescriptorBinding* binding = &module.descriptor_bindings[i];
         switch (binding->descriptor_type)
