@@ -489,8 +489,8 @@ static bool create_textures()
     {
         .format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
         .usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER,
-        .width = RENDERER_WIDTH,
-        .height = RENDERER_HEIGHT,
+        .width = RENDERER_WIDTH * LIGHT_QUALITY,
+        .height = RENDERER_HEIGHT * LIGHT_QUALITY,
     };
     info[TEXTURE_COMPOSITE] = (SDL_GPUTextureCreateInfo)
     {

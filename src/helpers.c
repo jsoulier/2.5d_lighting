@@ -33,7 +33,7 @@ SDL_GPUShader* load_shader(
     for (int i = 0; i < module.descriptor_binding_count; i++)
     {
         const SpvReflectDescriptorBinding* binding = &module.descriptor_bindings[i];
-        switch (module.descriptor_bindings[i].descriptor_type)
+        switch (binding->descriptor_type)
         {
         case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
             info.num_uniform_buffers++;
@@ -44,7 +44,7 @@ SDL_GPUShader* load_shader(
         case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER:
             info.num_storage_buffers++;
             break;
-        case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+        case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE:
             info.num_storage_textures++;
             break;
         }
@@ -104,7 +104,7 @@ SDL_GPUComputePipeline* load_compute_pipeline(
     info.threadcount_x = entry->local_size.x;
     info.threadcount_y = entry->local_size.y;
     info.threadcount_z = entry->local_size.z;
-    for (int i = 0; i < module.descriptor_binding_count; ++i)
+    for (int i = 0; i < module.descriptor_binding_count; i++)
     {
         const SpvReflectDescriptorBinding* binding = &module.descriptor_bindings[i];
         switch (binding->descriptor_type)
@@ -116,23 +116,23 @@ SDL_GPUComputePipeline* load_compute_pipeline(
             info.num_samplers++;
             break;
         case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER:
-            if (binding->accessed)
-            {
-                info.num_readwrite_storage_buffers++;
-            }
-            else
+            if (binding->decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE)
             {
                 info.num_readonly_storage_buffers++;
             }
+            else
+            {
+                info.num_readwrite_storage_buffers++;
+            }
             break;
         case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE:
-            if (binding->accessed)
+            if (binding->decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE)
             {
-                info.num_readwrite_storage_textures++;
+                info.num_readonly_storage_textures++;
             }
             else
             {
-                info.num_readonly_storage_textures++;
+                info.num_readwrite_storage_textures++;
             }
             break;
         }
@@ -200,6 +200,7 @@ SDL_GPUTexture* load_texture(
         return NULL;
     }
     memcpy(dst, src, width * height * 4);
+    stbi_image_free(src);
     SDL_UnmapGPUTransferBuffer(device, buffer);
     SDL_GPUTextureTransferInfo tti = {0};
     SDL_GPUTextureRegion region = {0};
@@ -212,7 +213,6 @@ SDL_GPUTexture* load_texture(
     if (!commands)
     {
         SDL_Log("Failed to acquire command buffer: %s, %s", file, SDL_GetError());
-        stbi_image_free(src);
         SDL_ReleaseGPUTexture(device, texture);
         return NULL;
     }
@@ -220,7 +220,6 @@ SDL_GPUTexture* load_texture(
     if (!copy)
     {
         SDL_Log("Failed to begin copy pass: %s, %s", file, SDL_GetError());
-        stbi_image_free(src);
         SDL_ReleaseGPUTexture(device, texture);
         SDL_CancelGPUCommandBuffer(commands);
         return NULL;

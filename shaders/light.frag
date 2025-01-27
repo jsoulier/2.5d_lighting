@@ -41,7 +41,7 @@ float raycast(
         return 0.0f;
     }
     vec3 direction = dst - src;
-    const float step1 = 1.0f;
+    const float step1 = LIGHT_STEP;
     const vec2 step2 = step1 / vec2(textureSize(s_ray_position_front, 0));
     const float spread2 = length(direction.xz);
     const float spread3 = length(direction);
