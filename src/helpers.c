@@ -44,7 +44,7 @@ SDL_GPUShader* load_shader(
         case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER:
             info.num_storage_buffers++;
             break;
-        case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+        case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE:
             info.num_storage_textures++;
             break;
         }
@@ -200,6 +200,7 @@ SDL_GPUTexture* load_texture(
         return NULL;
     }
     memcpy(dst, src, width * height * 4);
+    stbi_image_free(src);
     SDL_UnmapGPUTransferBuffer(device, buffer);
     SDL_GPUTextureTransferInfo tti = {0};
     SDL_GPUTextureRegion region = {0};
@@ -212,7 +213,6 @@ SDL_GPUTexture* load_texture(
     if (!commands)
     {
         SDL_Log("Failed to acquire command buffer: %s, %s", file, SDL_GetError());
-        stbi_image_free(src);
         SDL_ReleaseGPUTexture(device, texture);
         return NULL;
     }
@@ -220,7 +220,6 @@ SDL_GPUTexture* load_texture(
     if (!copy)
     {
         SDL_Log("Failed to begin copy pass: %s, %s", file, SDL_GetError());
-        stbi_image_free(src);
         SDL_ReleaseGPUTexture(device, texture);
         SDL_CancelGPUCommandBuffer(commands);
         return NULL;
