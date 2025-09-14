@@ -35,3 +35,8 @@ cmake --build . --parallel 8
 cd bin
 ./fluid_simulation
 ```
+
+### Usage
+
+From the ImGui window, add a density and velocity spawner to begin working.
+You can also load several samples from ImGui which can be found [here](samples/).
