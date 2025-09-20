@@ -1,0 +1,2 @@
+*.comp linguist-language=HLSL
+lib/** linguist-vendored
